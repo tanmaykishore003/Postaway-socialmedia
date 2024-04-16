@@ -8,7 +8,8 @@ export default class UserModel {
         this.password = password
     }
 
-    static signup(name, email, password) {
+    static addUser(data) {
+        const {name, email, password} = data
         const newUser = new UserModel(
             users.length + 1,
             name,
@@ -20,7 +21,8 @@ export default class UserModel {
         return newUser
     }
 
-    static signin(email, password) {
+    static confirmUser(data) {
+        const { email, password } = data
         const validUser = users.find(u => u.email == email && u.password == password)
         return validUser
     }

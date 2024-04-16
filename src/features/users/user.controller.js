@@ -1,18 +1,36 @@
 import UserModel from "./user.model.js"
+import jwt from 'jsonwebtoken'
 
 export default class UserController {
-    signUp(req, res) {
-        const {name, email, password} = req.body
-        const user = UserModel.signup(name, email, password);
-        res.send(user)
+    registerUser(req, res) {
+        const userData = req.body
+        if(userData) {
+            const user = UserModel.addUser(userData);
+            res.status(201).send({ status: "success", user})
+        }
+        else {
+            res.status(401).send({status: "failure", msg: "Invalid user details"})
+        }
     }
 
-    signIn(req, res) {
-        const {email, password} = req.body
-        const isValid = UserModel.signin(email, password)
-        if(!isValid) {
-            return res.send('Incorrect Credentials')
+    loginUser(req, res) {
+        const status = UserModel.confirmUser(req.body)
+        if(status) {
+            const key = 'MzkybiyJ7Fd4zCrNidk9mb5VSHEEpc3C'
+            const token = jwt.sign(
+                { userId: status.id, userEmail: status.email},
+                key,
+                { expiresIn: "1h"}
+            )
+
+            res
+            .status(201)
+            .cookie("jwtToken", token, { maxAge: 900000, httpOnly: false })
+            .cookie("userId", status.id, { maxAge: 900000, httpOnly: false })
+            .send({ status: "success", msg: "login successfull", token });
         }
-        res.send(isValid)
+        else {
+            res.status(401).send({ status: "failure", msg: "invalid user details" })
+        }
     }
 }
